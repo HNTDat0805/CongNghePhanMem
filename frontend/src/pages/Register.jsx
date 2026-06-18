@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UsersService, AuthService } from '../client';
+import { useUser } from '../context/UserContext';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { fetchUser } = useUser();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +37,7 @@ const Register = () => {
         }
       });
       localStorage.setItem('access_token', loginResp.access_token);
+      await fetchUser();
       navigate('/app');
     } catch (err) {
       setError('Registration failed. Email might be taken.');

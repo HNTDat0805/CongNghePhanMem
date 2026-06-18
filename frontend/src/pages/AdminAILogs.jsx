@@ -27,18 +27,12 @@ const AdminAILogs = () => {
       }
       // Also fetch ai-config
       try {
-        const token = localStorage.getItem('access_token');
-        const configRes = await fetch('http://localhost:8000/api/v1/admin/ai-config', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (configRes.ok) {
-          const config = await configRes.json();
-          if (config.model) setSelectedModel(config.model);
-          if (config.api_key) setApiKey(config.api_key);
-          if (config.quota_used !== undefined) {
-            setQuotaUsed(config.quota_used);
-            setQuotaPercent(Math.min(100, Math.round((config.quota_used / 30000) * 100)));
-          }
+        const config = await AdminService.adminGetAiConfigApiV1AdminAiConfigGet();
+        if (config.model) setSelectedModel(config.model);
+        if (config.api_key) setApiKey(config.api_key);
+        if (config.quota_used !== undefined) {
+          setQuotaUsed(config.quota_used);
+          setQuotaPercent(Math.min(100, Math.round((config.quota_used / 30000) * 100)));
         }
       } catch (e) {
         console.error("Failed to fetch ai config", e);
@@ -70,21 +64,15 @@ const AdminAILogs = () => {
     try {
       setConfigSaving(true);
       setTestResult(null);
-      const token = localStorage.getItem('access_token');
-      const res = await fetch('http://localhost:8000/api/v1/admin/ai-config', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ model: selectedModel, api_key: apiKey })
+      await AdminService.adminUpdateAiConfigApiV1AdminAiConfigPost({
+        requestBody: {
+          model: selectedModel,
+          api_key: apiKey
+        }
       });
-      if (res.ok) {
-        alert("Configuration saved successfully!");
-      } else {
-        alert("Failed to save configuration.");
-      }
+      alert("Configuration saved successfully!");
     } catch (e) {
+      console.error(e);
       alert("Error saving configuration.");
     } finally {
       setConfigSaving(false);
@@ -99,18 +87,14 @@ const AdminAILogs = () => {
     try {
       setTestingConnection(true);
       setTestResult(null);
-      const token = localStorage.getItem('access_token');
-      const res = await fetch('http://localhost:8000/api/v1/admin/ai-config/test', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ api_key: apiKey })
+      const data = await AdminService.adminTestAiConfigApiV1AdminAiConfigTestPost({
+        requestBody: {
+          api_key: apiKey
+        }
       });
-      const data = await res.json();
       setTestResult({ success: data.success, message: data.message });
     } catch (e) {
+      console.error(e);
       setTestResult({ success: false, message: "Network error during test." });
     } finally {
       setTestingConnection(false);
