@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UsersService, AuthService } from '../client';
 import { useUser } from '../context/UserContext';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { fetchUser } = useUser();
+  const { user, loading: userLoading, fetchUser } = useUser();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Nếu đã đăng nhập, tự chuyển hướng theo vai trò
+  useEffect(() => {
+    if (!userLoading && user) {
+      navigate(user.is_superuser ? '/admin' : '/app', { replace: true });
+    }
+  }, [user, userLoading, navigate]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
